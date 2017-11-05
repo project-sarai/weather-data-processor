@@ -1,0 +1,13 @@
+{
+  "name": "weather-data-processor",
+  "dependencies": {
+    "async": "^2.5.0",
+    "mongoose": "^4.13.0",
+    "remove": "^0.1.5",
+    "request": "^2.83.0",
+    "twitter": "^1.7.1"
+  },
+  "scripts": {
+    "start": "nodemon index.js"
+  }
+}

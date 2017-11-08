@@ -29,24 +29,26 @@ const settingsAsync = (callback) => {
 module.exports = () => {
 
     async.parallel({stations: stationsAsync, settings: settingsAsync}, (err, results) => {
-      if (err) { console.log(err); }
+      if (err) { console.log(`LOG: ${err}`); }
+      else {
+        // const { stations, settings } = results;
+        // fetchDailyData(stations, settings[0].value);
 
-      const { stations, settings } = results;
-      fetchDailyData(stations, settings[0].value);
-
-      // SAMPLE DATA
-      // const stations = [ { id: 'ICALABAR6' } ]
-      // const { settings } = results;
-      // fetchDailyData(stations, settings[0].value);
+        // SAMPLE DATA
+        const stations = [ { id: 'ICALABAR6' }, { id: 'IMIMAROP6' } ]
+        const { settings } = results;
+        fetchDailyData(stations, settings[0].value);
+      }
     });
 
 }
 
 const fetchDailyData = (stations, apiKey) => {
 
+  const numberOfStations = stations.length;
 
-  async.eachSeries(stations,
-    (station, done) => {
+  async.eachOfSeries(stations,
+    (station, index, eosDone) => {
       setTimeout(function() {
         wu.get10DayForecast(station.id, apiKey, (result) => {
 
@@ -55,11 +57,11 @@ const fetchDailyData = (stations, apiKey) => {
           try {
             simpleForecast = JSON.parse(result).forecast.simpleforecast.forecastday
           } catch(e) {
-            console.log('No data for ' + station.id);
-            done();
+            console.log(`LOG: No data for ${station.id}`);
+            eosDone();
           }
 
-          const today = simpleForecast[0]
+          const today = simpleForecast[0];
 
           const location =  station.shortLabel ? station.shortLabel : sanitizeLabel(station.label);
           const date = today.date.day;
@@ -78,20 +80,27 @@ const fetchDailyData = (stations, apiKey) => {
 
               done(null, advisory);
             },
-            function(advisory, done) {
-              twitter.update(advisory, done);
+            function(advisory, done, eosDone) {
+              if (index == numberOfStations - 1) {
+                twitter.update(advisory, done, eosDone);
+              };
+              twitter.update(advisory, done, null);
             }
           ]);
 
-          done();
+          // eosDone();
         });
       }, 10*1000); // Once every 10 seconds
     },
     (err) => {
       if (err) { console.log(err); }
-
-      console.log('Finished!');
-      mongoose.disconnect();
+      console.log('LOG: Finished tweeting advisories. Disconnecting from database...');
+      mongoose.disconnect((err) => {
+        if (err) { console.log('LOG: Error disconnecting from database'); }
+        else {
+          console.log('LOG: Disconnected from database.');
+        }
+      });
     });
 }
 

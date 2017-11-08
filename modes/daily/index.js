@@ -63,7 +63,7 @@ const fetchDailyData = (stations, apiKey) => {
 
           const today = simpleForecast[0];
 
-          const location =  station.shortLabel ? station.shortLabel : sanitizeLabel(station.label);
+          const location =  station.shortLabel ? station.shortLabel : 'SAMPLE LABEL' //sanitizeLabel(station.label);
           const date = today.date.day;
           const month = today.date.month;
           const temp_high_c = today.high.celsius;
@@ -81,10 +81,13 @@ const fetchDailyData = (stations, apiKey) => {
               done(null, advisory);
             },
             function(advisory, done, eosDone) {
+              let eachOfSeriesIsOver = false;
+
               if (index == numberOfStations - 1) {
-                twitter.update(advisory, done, eosDone);
+                console.log(`Index: ${index}, Number of Stations: ${numberOfStations}`);
+                eachOfSeriesIsOver = true
               };
-              twitter.update(advisory, done, null);
+              twitter.update(advisory, done, eosDone, eachOfSeriesIsOver);
             }
           ]);
 

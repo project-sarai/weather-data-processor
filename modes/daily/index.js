@@ -83,8 +83,8 @@ const fetchDailyData = (stations, apiKey) => {
             function(advisory, done, eosDone) {
               let eachOfSeriesIsOver = false;
 
+              console.log(`Index: ${index}, Number of Stations: ${numberOfStations}`);
               if (index == numberOfStations - 1) {
-                console.log(`Index: ${index}, Number of Stations: ${numberOfStations}`);
                 eachOfSeriesIsOver = true
               };
               twitter.update(advisory, done, eosDone, eachOfSeriesIsOver);

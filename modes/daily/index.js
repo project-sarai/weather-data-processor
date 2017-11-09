@@ -32,6 +32,9 @@ module.exports = () => {
       if (err) { console.log(err); }
 
       const { stations, settings } = results;
+
+      stations.append({ id: 'NULL'  });
+
       fetchDailyData(stations, settings[0].value);
 
       // SAMPLE DATA

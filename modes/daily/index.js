@@ -33,12 +33,10 @@ module.exports = () => {
 
       const { stations, settings } = results;
 
-      stations.append({ id: 'NULL'  });
-
       fetchDailyData(stations, settings[0].value);
 
       // SAMPLE DATA
-      // const stations = [ { id: 'ICALABAR6' } ]
+      // const stations = [ { id: 'ICALABAR6', shortLabel: 'ICALABAR6' }, {id: 'IMIMAROP6', shortLabel: 'IMIMAROP6'} ];
       // const { settings } = results;
       // fetchDailyData(stations, settings[0].value);
     });
@@ -47,20 +45,18 @@ module.exports = () => {
 
 const fetchDailyData = (stations, apiKey) => {
 
+  const numberOfStations = stations.length;
 
-  async.eachSeries(stations,
-    (station, done) => {
+  async.eachOfSeries(stations,
+    (station, index, eosDone) => {
       setTimeout(function() {
         wu.get10DayForecast(station.id, apiKey, (result) => {
 
-          let simpleforecast = null;
-
-          try {
-            simpleForecast = JSON.parse(result).forecast.simpleforecast.forecastday
-          } catch(e) {
-            console.log('No data for ' + station.id);
-            done();
+          if (result.error) {
+            console.log(`LOG: Wunderground didn't return data for ${station.id}`);
           }
+
+          const simpleForecast = JSON.parse(result).forecast.simpleforecast.forecastday;
 
           const today = simpleForecast[0]
 
@@ -82,18 +78,17 @@ const fetchDailyData = (stations, apiKey) => {
               done(null, advisory);
             },
             function(advisory, done) {
-              twitter.update(advisory, done);
+              twitter.update(advisory, done, eosDone);
             }
           ]);
 
-          done();
         });
       }, 10*1000); // Once every 10 seconds
     },
     (err) => {
       if (err) { console.log(err); }
 
-      console.log('Finished!');
+      console.log(`LOG: Finished at ${new Date()}`);
       mongoose.disconnect();
     });
 }

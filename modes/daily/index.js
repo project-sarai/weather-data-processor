@@ -88,7 +88,7 @@ const fetchDailyData = (stations, apiKey) => {
     (err) => {
       if (err) { console.log(err); }
 
-      console.log(`LOG: Finished tweeting advisories for ${numberOfStations} at ${new Date()}`);
+      console.log(`LOG: Finished tweeting advisories for ${numberOfStations} stations at ${new Date()}`);
       mongoose.disconnect();
     });
 }
